@@ -78,14 +78,18 @@ const MoApproval = () => {
    * NOTE: This function is now called from MoDashboard and data is passed as props
    * This function handles search and refresh operations only
    */
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
   const fetchOrders = async (searchFilters = {}) => {
     try {
 
-      if (initializationRef.current) {
-      console.log('⚠️ Skipping duplicate effect execution (Strict Mode)');
-      return;
-    }
-    initializationRef.current = true;
+    //   if (initializationRef.current) {
+    //   console.log('⚠️ Skipping duplicate effect execution (Strict Mode)');
+    //   return;
+    // }
+    // initializationRef.current = true;
     
 
       setLoading(true);
