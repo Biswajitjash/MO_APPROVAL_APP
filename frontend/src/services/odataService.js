@@ -76,6 +76,22 @@ export const moApprovalService = {
    * Backend OData: MO_ORDER_STATUSSet filtered by Aufnr + ObjectNumber
    * Returns: Array of activity + history row objects
    */
+
+  getNotificationData: async (fromDate, toDate) => {
+    try {
+      const response = await apiClient.get('/notification-data', {
+        params: {
+          fromDate,
+          toDate
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('❌ getNotificationData error:', error.message);
+      throw normaliseError(error, 'Failed to fetch notification data');
+    }
+  },
+  
   getApprovelOrdersDetails: async (filters = {}) => {
     try {
       const params = new URLSearchParams();

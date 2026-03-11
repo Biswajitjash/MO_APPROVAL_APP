@@ -110,7 +110,7 @@ app.get('/api/maintenance-orders', async (req, res) => {
     console.log(`   Filter: ${filterQuery}`);
     console.log(`   SAP: MO_APPROVAL_HEADERSet${filterQuery}`);
 
-    const response = await sapClient.get(`/MO_APPROVAL_HEADERSet${filterQuery}`);
+    const response = await sapClient.get(`ZGW_MO_APPROVAL_SRV/MO_APPROVAL_HEADERSet${filterQuery}`);
     const results  = response.data.d?.results || [];
 
     console.log(`✅ Success: Fetched ${results.length} order(s)`);
@@ -142,6 +142,64 @@ app.get('/api/maintenance-orders', async (req, res) => {
   }
 });
 
+
+
+
+/**
+ * GET /api/notification-data
+ * Fetch notification data.
+ */
+app.get('/api/notification-data', async (req, res) => {
+  try {
+    
+    const { fromDate, toDate } = req.query;
+
+    // Build filter query
+    const filterQuery = `?$filter=qmdat ge datetime'${fromDate}' and qmdat le datetime'${toDate}'`
+                      + `&$orderby=qmdat desc,qmnum desc &$format=json`;
+
+    console.log('');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 GET /api/notification-data');
+    console.log(`   From    : ${fromDate}`);
+    console.log(`   To      : ${toDate}`);
+    console.log(`   SAP     : Notifications${filterQuery}`);
+    console.log('═══════════════════════════════════════════════════');
+
+
+    const response = await sapClient.get(`ZSB_MO_NOTIFICATIONS/Notifications${filterQuery}`);
+    // const results  = response.data?.d?.results || [];
+    const results  = response?.data || [];
+
+    console.log(`✅ Success: Fetched ${results.length} notification(s)`);
+    console.log('═══════════════════════════════════════════════════');
+    console.log('');
+
+    res.json({
+      success:   true,
+      data:      results,
+      count:     results.length,
+      timestamp: new Date().toISOString(),
+    });
+    
+    // Implementation for fetching notification data
+  
+  } catch (error) {
+    console.error('❌ ERROR in GET /api/notification-data');
+    console.error('Message:', error.message);
+    console.error('Status:',  error.response?.status);
+    console.error('═══════════════════════════════════════════════════');
+    console.error('');
+
+    res.status(error.response?.status || 500).json({
+      success:    false,
+      error:      error.message,
+      details:    error.response?.data,
+      statusCode: error.response?.status || 500,
+    });
+  }
+});
+
 /**
  * GET /api/approval-order-details
  * Fetch activities + approval history rows for a specific MO.
@@ -168,7 +226,7 @@ app.get('/api/approval-order-details', async (req, res) => {
     console.log(`   ObjectNumber: ${ObjectNumber}`);
     console.log(`   SAP: MO_ORDER_STATUSSet${filterQuery}`);
 
-    const response = await sapClient.get(`/MO_ORDER_STATUSSet${filterQuery}`);
+    const response = await sapClient.get(`ZGW_MO_APPROVAL_SRV/MO_ORDER_STATUSSet${filterQuery}`);
     const results  = response.data.d?.results || [];
 
     console.log(`✅ Success: Fetched ${results.length} activity row(s)`);
@@ -243,7 +301,7 @@ app.get('/api/approve-order/:orderNumber', async (req, res) => {
     console.log(`   SAP Entity:  MO_ORDER_STATUSSet('${orderStr}')`);
 
     const response = await sapClient.get(
-      `/MO_ORDER_STATUSSet('${orderStr}')?$format=json`
+      `ZGW_MO_APPROVAL_SRV/MO_ORDER_STATUSSet('${orderStr}')?$format=json`
     );
 
     console.log(`✅ Success: Order ${orderStr} approved via SAP`);
@@ -294,7 +352,7 @@ app.get('/api/maintenance-orders/:orderNumber/:objectNumber', async (req, res) =
     console.log(`   ObjectNumber: ${objectNumber}`);
 
     const response = await sapClient.get(
-      `/MO_APPROVAL_HEADERSet(OrderNumber='${orderNumber}',ObjectNumber='${objectNumber}')?$format=json`
+      `ZGW_MO_APPROVAL_SRV/MO_APPROVAL_HEADERSet(OrderNumber='${orderNumber}',ObjectNumber='${objectNumber}')?$format=json`
     );
 
     console.log(`✅ Success: Order details fetched`);
@@ -350,6 +408,7 @@ app.get('/api/health', async (req, res) => {
     endpoints: {
       maintenance_orders:      'GET  /api/maintenance-orders',
       approval_order_details:  'GET  /api/approval-order-details',
+      notification_data:       'GET  /api/notification-data',
       approve_order:           'GET  /api/approve-order/:orderNumber',
       order_details:           'GET  /api/maintenance-orders/:orderNumber/:objectNumber',
     },
@@ -383,6 +442,7 @@ app.get('/', (_req, res) => {
         health:                 'GET /api/health',
         maintenance_orders:     'GET /api/maintenance-orders?plant=X&location=Y&user=Z&orderNumber=N&status=S',
         approval_order_details: 'GET /api/approval-order-details?OrderNumber=X&ObjectNumber=Y',
+        notification_data:      'GET /api/notification-data',
         approve_order:          'GET /api/approve-order/:orderNumber',
         order_details:          'GET /api/maintenance-orders/:orderNumber/:objectNumber',
       },
@@ -404,6 +464,7 @@ app.use((req, res) => {
       'GET /api/health',
       'GET /api/maintenance-orders',
       'GET /api/approval-order-details',
+      'GET /api/notification-data',
       'GET /api/approve-order/:orderNumber',
       'GET /api/maintenance-orders/:orderNumber/:objectNumber',
     ],
@@ -455,6 +516,7 @@ const server = app.listen(PORT, () => {
   console.log(`  GET  /api/health`);
   console.log(`  GET  /api/maintenance-orders`);
   console.log(`  GET  /api/approval-order-details`);
+  console.log(`  GET  /api/notification-data`);
   console.log(`  GET  /api/approve-order/:orderNumber              ← approve`);
   console.log(`  GET  /api/maintenance-orders/:orderNumber/:objectNumber`);
   console.log('════════════════════════════════════════════════════');
