@@ -167,9 +167,10 @@ app.get('/api/notification-data', async (req, res) => {
     console.log('═══════════════════════════════════════════════════');
 
 
+    
     const response = await sapClient.get(`ZSB_MO_NOTIFICATIONS/Notifications${filterQuery}`);
-    // const results  = response.data?.d?.results || [];
-    const results  = response?.data || [];
+    const results  = response.data?.d?.results || [];
+    // const results  = response.data || [];
 
     console.log(`✅ Success: Fetched ${results.length} notification(s)`);
     console.log('═══════════════════════════════════════════════════');
