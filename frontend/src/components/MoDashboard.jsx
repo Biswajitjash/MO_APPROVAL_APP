@@ -271,8 +271,8 @@ const StatSummaryFlipCard = ({ notificationData, onCardClick }) => {
       <Box sx={{
         position: 'relative', width: '100%', height: '100%',
         transformStyle: 'preserve-3d',
-        transition: 'transform 0.7s cubic-bezier(0.4,0.2,0.2,1)',
-        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        transition: 'transform 0.9s cubic-bezier(0.4,0.2,0.2,1)',
+        transform: flipped ? 'rotateY(180deg) scale(1)' : 'rotateY(0deg) scale(1)',
       }}>
 
         {/* ── FRONT: stat list ── */}
@@ -280,7 +280,7 @@ const StatSummaryFlipCard = ({ notificationData, onCardClick }) => {
           <CardContent sx={{ p: 1.5, height: '100%', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={0.8}>
               <Box display="flex" alignItems="center" gap={0.8}>
-                <AssignmentIcon sx={{ fontSize: 18, color: 'white' }} />
+                <AssignmentIcon sx={{ fontSize: 18, color: 'blue' }} />
                 <Typography variant="body2" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem' }}>
                   Notification Open
                 </Typography>
@@ -389,19 +389,19 @@ const DateRangePicker = ({ fromDate, toDate, onApply, notifLoading }) => {
           size="small"
           variant="contained"
           startIcon={notifLoading
-            ? <CircularProgress size={13} sx={{ color: 'white' }} />
-            : <DateRangeIcon sx={{ fontSize: 15 }} />}
+            ? <CircularProgress size={10} sx={{ color: 'yellow' }} />
+            : <DateRangeIcon sx={{ fontSize: 10 }} />}
           onClick={handleOpen}
           disabled={notifLoading}
           sx={{
             fontSize: '0.68rem', py: 0.35, px: 1.2, borderRadius: 2,
-            background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(4px)',
-            border: '1px solid rgba(255,255,255,0.38)', color: 'white',
-            '&:hover': { background: 'rgba(255,255,255,0.28)' },
+            background: 'rgba(218, 241, 5, 0.18)', backdropFilter: 'blur(4px)',
+            border: '1px solid rgba(4, 27, 238, 0.38)', color: 'yellow',
+            '&:hover': { background: 'rgba(233, 236, 7, 0.28)' },
             textTransform: 'none', whiteSpace: 'nowrap',
           }}
         >
-          {notifLoading ? 'Loading…' : `${fromDate} → ${toDate}`}
+          {/* {notifLoading ? 'Loading…' : `${fromDate} → ${toDate}`} */}
         </Button>
       </Tooltip>
 

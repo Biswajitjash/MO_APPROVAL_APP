@@ -149,48 +149,119 @@ app.get('/api/maintenance-orders', async (req, res) => {
  * GET /api/notification-data
  * Fetch notification data.
  */
+// app.get('/api/notification-data', async (req, res) => {
+//   try {
+    
+//     const { fromDate, toDate } = req.query;
+
+//     // Build filter query
+//     const filterQuery = `?$filter=qmdat ge datetime'${fromDate}' and qmdat le datetime'${toDate}'`
+//                       + `&$orderby=qmdat desc,qmnum desc &$format=json`;
+
+//     console.log('');
+//     console.log('═══════════════════════════════════════════════════');
+//     console.log('🔍 GET /api/notification-data');
+//     console.log(`   From    : ${fromDate}`);
+//     console.log(`   To      : ${toDate}`);
+//     console.log(`   SAP     : Notifications${filterQuery}`);
+//     console.log('═══════════════════════════════════════════════════');
+
+
+    
+//     const response = await sapClient.get(`ZSB_MO_NOTIFICATIONS/Notifications${filterQuery}`);
+//     const results  = response.data?.d?.results || [];
+//     // const results  = response.data || [];
+
+//     console.log(`✅ Success: Fetched ${results.length} notification(s)`);
+//     console.log('═══════════════════════════════════════════════════');
+//     console.log('');
+
+//     res.json({
+//       success:   true,
+//       data:      results,
+//       count:     results.length,
+//       timestamp: new Date().toISOString(),
+//     });
+    
+//     // Implementation for fetching notification data
+  
+//   } catch (error) {
+//     console.error('❌ ERROR in GET /api/notification-data');
+//     console.error('Message:', error.message);
+//     console.error('Status:',  error.response?.status);
+//     console.error('═══════════════════════════════════════════════════');
+//     console.error('');
+
+//     res.status(error.response?.status || 500).json({
+//       success:    false,
+//       error:      error.message,
+//       details:    error.response?.data,
+//       statusCode: error.response?.status || 500,
+//     });
+//   }
+// });
+
 app.get('/api/notification-data', async (req, res) => {
   try {
-    
     const { fromDate, toDate } = req.query;
 
-    // Build filter query
-    const filterQuery = `?$filter=qmdat ge datetime'${fromDate}' and qmdat le datetime'${toDate}'`
-                      + `&$orderby=qmdat desc,qmnum desc &$format=json`;
+    const baseFilter = `$filter=qmdat ge datetime'${fromDate}' and qmdat le datetime'${toDate}'`
+                     + `&$orderby=qmdat desc,qmnum desc`
+                     + `&$format=json`;
 
     console.log('');
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 GET /api/notification-data');
-    console.log(`   From    : ${fromDate}`);
-    console.log(`   To      : ${toDate}`);
-    console.log(`   SAP     : Notifications${filterQuery}`);
+    console.log('🔍 GET /api/notification-data (paginated)');
+    console.log(`   From : ${fromDate}`);
+    console.log(`   To   : ${toDate}`);
     console.log('═══════════════════════════════════════════════════');
 
+    // ── Paginate through all SAP records ──
+    const PAGE_SIZE  = 100;   // SAP max per page
+    let allResults   = [];
+    let skip         = 0;
+    let page         = 1;
+    let hasMore      = true;
 
-    
-    const response = await sapClient.get(`ZSB_MO_NOTIFICATIONS/Notifications${filterQuery}`);
-    const results  = response.data?.d?.results || [];
-    // const results  = response.data || [];
+    while (hasMore) {
+      const query    = `?${baseFilter}&$top=${PAGE_SIZE}&$skip=${skip}`;
+      const url      = `ZSB_MO_NOTIFICATIONS/Notifications${query}`;
 
-    console.log(`✅ Success: Fetched ${results.length} notification(s)`);
+      console.log(`📄 Fetching page ${page} — $skip=${skip} $top=${PAGE_SIZE}`);
+
+      const response = await sapClient.get(url);
+      const results  = response.data?.d?.results || [];
+
+      allResults = [...allResults, ...results];
+
+      console.log(`   Page ${page}: ${results.length} record(s) received  |  Total so far: ${allResults.length}`);
+
+      // If SAP returned fewer than PAGE_SIZE, we've hit the last page
+      if (results.length < PAGE_SIZE) {
+        hasMore = false;
+      } else {
+        skip += PAGE_SIZE;
+        page++;
+      }
+    }
+
+    console.log(`✅ Done: Fetched ${allResults.length} total notification(s) across ${page} page(s)`);
     console.log('═══════════════════════════════════════════════════');
     console.log('');
 
     res.json({
       success:   true,
-      data:      results,
-      count:     results.length,
+      data:      allResults,
+      count:     allResults.length,
+      pages:     page,
       timestamp: new Date().toISOString(),
     });
-    
-    // Implementation for fetching notification data
-  
+
   } catch (error) {
     console.error('❌ ERROR in GET /api/notification-data');
-    console.error('Message:', error.message);
-    console.error('Status:',  error.response?.status);
+    console.error('   Message:', error.message);
+    console.error('   Status :', error.response?.status);
     console.error('═══════════════════════════════════════════════════');
-    console.error('');
 
     res.status(error.response?.status || 500).json({
       success:    false,
