@@ -206,7 +206,7 @@ app.get('/api/notification-data', async (req, res) => {
     const { fromDate, toDate } = req.query;
 
     const baseFilter = `$filter=qmdat ge datetime'${fromDate}' and qmdat le datetime'${toDate}'`
-                     + `&$orderby=qmdat desc,qmnum desc`
+                     + `&$orderby=qmart asc,qmnum desc,qmdat desc`
                      + `&$format=json`;
 
     console.log('');
@@ -245,7 +245,7 @@ app.get('/api/notification-data', async (req, res) => {
       }
     }
 
-    console.log(`✅ Done: Fetched ${allResults.length} total notification(s) across ${page} page(s)`);
+    console.log(`✅ Done: Fetched notificatios data ${allResults.length} total notification(s) across ${page} page(s)`);
     console.log('═══════════════════════════════════════════════════');
     console.log('');
 
@@ -271,6 +271,83 @@ app.get('/api/notification-data', async (req, res) => {
     });
   }
 });
+
+
+/**
+ * GET /api/mo-data
+ * Fetch MO order data.
+ */
+app.get('/api/mo-order-data', async (req, res) => {
+  try {
+    const { fromDate, toDate } = req.query;
+
+    const baseFilter = `$filter=Erdat ge datetime'${fromDate}' and Erdat le datetime'${toDate}'`
+                     + `&$orderby=Sowrk asc,Auart asc,Erdat desc`
+                     + `&$format=json`;
+
+    console.log('');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 GET /api/mo-order-data (paginated)');
+    console.log(`   From : ${fromDate}`);
+    console.log(`   To   : ${toDate}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ── Paginate through all SAP records ──
+    const PAGE_SIZE  = 100;   // SAP max per page
+    let allResults   = [];
+    let skip         = 0;
+    let page         = 1;
+    let hasMore      = true;
+
+    while (hasMore) {
+      const query    = `?${baseFilter}&$top=${PAGE_SIZE}&$skip=${skip}`;
+      const url      = `ZSB_MO_NOTIFICATIONS/MoHeaderData${query}`;
+
+      console.log(`📄 Fetching page ${page} — $skip=${skip} $top=${PAGE_SIZE}`);
+
+      const response = await sapClient.get(url);
+      const results  = response.data?.d?.results || [];
+
+      allResults = [...allResults, ...results];
+
+      console.log(`   Page ${page}: ${results.length} record(s) received  |  Total so far: ${allResults.length}`);
+
+      // If SAP returned fewer than PAGE_SIZE, we've hit the last page
+      if (results.length < PAGE_SIZE) {
+        hasMore = false;
+      } else {
+        skip += PAGE_SIZE;
+        page++;
+      }
+    }
+
+    console.log(`✅ Done: Fetched mo-data ${allResults.length} total MO order(s) across ${page} page(s)`);
+    console.log('═══════════════════════════════════════════════════');
+    console.log('');
+
+    res.json({
+      success:   true,
+      data:      allResults,
+      count:     allResults.length,
+      pages:     page,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error) {
+    console.error('❌ ERROR in GET /api/mo-order-data');
+    console.error('   Message:', error.message);
+    console.error('   Status :', error.response?.status);
+    console.error('═══════════════════════════════════════════════════');
+
+    res.status(error.response?.status || 500).json({
+      success:    false,
+      error:      error.message,
+      details:    error.response?.data,
+      statusCode: error.response?.status || 500,
+    });
+  }
+});
+
 
 /**
  * GET /api/approval-order-details

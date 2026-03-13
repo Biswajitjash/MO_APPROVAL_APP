@@ -77,6 +77,7 @@ export const moApprovalService = {
    * Returns: Array of activity + history row objects
    */
 
+
   getNotificationData: async (fromDate, toDate) => {
     try {
       const response = await apiClient.get('/notification-data', {
@@ -92,6 +93,22 @@ export const moApprovalService = {
     }
   },
   
+  getMoOrderData: async (fromDate, toDate) => {
+    try {
+      const response = await apiClient.get('/mo-order-data', {
+        params: {
+          fromDate,
+          toDate
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('❌ getMoOrderData error:', error.message);
+      throw normaliseError(error, 'Failed to fetch MO order data');
+    }
+  },
+
+
   getApprovelOrdersDetails: async (filters = {}) => {
     try {
       const params = new URLSearchParams();
