@@ -3,6 +3,8 @@
 // ============================================================================
 
 // ── Static chart data ─────────────────────────────────────────────────────────
+// NOTE: MACHINE_FAULT_TRENDS is defined but was never imported anywhere.
+// Kept for potential future use; remove if truly unused.
 export const MACHINE_FAULT_TRENDS = [
   { time: '00:00', faults: 45 }, { time: '02:00', faults: 52 },
   { time: '04:00', faults: 48 }, { time: '06:00', faults: 65 },
@@ -12,6 +14,9 @@ export const MACHINE_FAULT_TRENDS = [
   { time: '20:00', faults: 88 }, { time: '22:00', faults: 95 },
 ];
 
+// FIX: TOTAL_FAULTS_REPORTED is static reference data.
+// This is intentionally kept as a constant for now.
+// TODO: Replace with a live API call when fault data feed is available.
 export const TOTAL_FAULTS_REPORTED = [
   { equipment: 'ATM_STRIPPER-3_A',    faults: 42 },
   { equipment: 'ATM_STRIPPER-3_B',    faults: 32 },
@@ -45,7 +50,10 @@ export const AUART_CONFIG = [
   { auart: 'ZCAN', label: 'Cannibalisation Maintenance',   color: '#00BFA5' },
   { auart: 'ZM04', label: 'Refurbishment-Equipment',       color: '#F57C00' },
 ];
-export const AUART_MAP = Object.fromEntries(AUART_CONFIG.map(a => [a.auart, a]));
+
+// FIX: Derived from AUART_CONFIG using Object.fromEntries — single source of truth.
+// Previously defined separately, which would silently go stale if AUART_CONFIG changed.
+export const AUART_MAP = Object.fromEntries(AUART_CONFIG.map((a) => [a.auart, a]));
 
 // ── Notification stat style maps ──────────────────────────────────────────────
 export const STAT_BG = {
@@ -68,16 +76,20 @@ export const QMART_COLOR = { M1: '#2E7D32', M2: '#1565C0', AC: '#C62828', Y2: '#
 
 // ── Approval palette ──────────────────────────────────────────────────────────
 export const APPROVAL_PALETTE = [
-  '#2196F3','#4CAF50','#FF9800','#9C27B0','#F44336',
-  '#00BCD4','#3F51B5','#E91E63','#795548','#607D8B',
-  '#8BC34A','#FF5722','#FFC107','#AA00FF','#00BFA5',
+  '#2196F3', '#4CAF50', '#FF9800', '#9C27B0', '#F44336',
+  '#00BCD4', '#3F51B5', '#E91E63', '#795548', '#607D8B',
+  '#8BC34A', '#FF5722', '#FFC107', '#AA00FF', '#00BFA5',
 ];
 
 // ── Shared cell style ─────────────────────────────────────────────────────────
 export const cellStyle = {
-  fontSize: '0.65rem', py: 0.3, px: 0.8,
-  whiteSpace: 'nowrap', overflow: 'hidden',
-  textOverflow: 'ellipsis', borderBottom: '1px solid #e8e8e8',
+  fontSize: '0.65rem',
+  py: 0.3,
+  px: 0.8,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  borderBottom: '1px solid #e8e8e8',
 };
 
 // ── Table column definitions ──────────────────────────────────────────────────
@@ -108,6 +120,11 @@ export const MO_COLUMNS = [
 ];
 
 // ── Helper functions ──────────────────────────────────────────────────────────
+
+/**
+ * Groups notification data by stat code.
+ * Returns an array sorted alphabetically by stat.
+ */
 export const groupByStat = (data) => {
   const map = {};
   data.forEach((item) => {
@@ -118,6 +135,10 @@ export const groupByStat = (data) => {
   return Object.values(map).sort((a, b) => a.stat.localeCompare(b.stat));
 };
 
+/**
+ * Groups MO order data by Txt30 (status description).
+ * Returns an array sorted alphabetically by label.
+ */
 export const groupByTxt30 = (data) => {
   const map = {};
   data.forEach((item) => {
@@ -128,9 +149,17 @@ export const groupByTxt30 = (data) => {
   return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
 };
 
+/**
+ * Parses SAP OData date format "/Date(timestamp)/" into a yyyy-mm-dd string.
+ * Returns null for missing or invalid input.
+ */
 export const parseSapDate = (sapDate) => {
   if (!sapDate) return null;
   try {
-    return new Date(parseInt(sapDate.replace('/Date(', '').replace(')/', ''))).toISOString().split('T')[0];
-  } catch { return null; }
+    const ms = parseInt(sapDate.replace('/Date(', '').replace(')/', ''), 10);
+    if (isNaN(ms)) return null;
+    return new Date(ms).toISOString().split('T')[0];
+  } catch {
+    return null;
+  }
 };
