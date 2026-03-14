@@ -15,7 +15,7 @@ import CheckBoxIcon   from '@mui/icons-material/CheckBox';
 import SwapHorizIcon  from '@mui/icons-material/SwapHoriz';
 import {
   STAT_BG, STAT_COLOR, APPROVAL_PALETTE, groupByStat, groupByTxt30,
-} from '../constants/moConstants';
+} from '../constants/MoConstants';
 
 // ── CSS keyframe (injected once at module level, not inside component) ─────────
 // FIX: was inside StatSummaryFlipCard body — a new <style> tag was injected into

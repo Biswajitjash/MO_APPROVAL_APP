@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import CloseIcon    from '@mui/icons-material/Close';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { groupByStat, groupByTxt30 } from '../constants/moConstants';
+import { groupByStat, groupByTxt30 } from '../constants/MoConstants';
 import { GroupedNotificationTable, GroupedMoOrderTable, MoMobileCard } from './MoTableComponents';
 
 // ── Notification Modal ────────────────────────────────────────────────────────

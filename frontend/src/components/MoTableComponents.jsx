@@ -13,7 +13,7 @@ import {
   STAT_BG, STAT_COLOR, STAT_HEADER_BG,
   QMART_BG, QMART_COLOR, AUART_MAP,
   cellStyle, groupByStat, groupByTxt30,
-} from '../constants/moConstants';
+} from '../constants/MoConstants';
 
 // ── Grouped Notification Table ────────────────────────────────────────────────
 export const GroupedNotificationTable = ({ data, isMobile }) => {
